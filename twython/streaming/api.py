@@ -108,23 +108,25 @@ class TwythonStreamer(object):
                     requests_args[k] = v
 
             while self.connected:
-                if method == 'get':
-                    requests_args['params'] = params
+                try:
+                    if method == 'get':
+                        requests_args['params'] = params
+                    else:
+                        requests_args['data'] = params
+
+                    response = func(url, **requests_args)
+                except requests.exceptions.Timeout:
+                    self.on_timeout()
                 else:
-                    requests_args['data'] = params
+                    if response.status_code != 200:
+                        self.on_error(response.status_code, response.content)
 
-                response = func(url, **requests_args)
-                if response.status_code != 200:
-                    # Include the content
-                    raise requests.exceptions.HTTPError(
-                        response.status_code, response.content)
+                    if self.retry_count and (self.retry_count - retry_counter) > 0:
+                        time.sleep(self.retry_in)
+                        retry_counter += 1
+                        _send(retry_counter)
 
-                if self.retry_count and (self.retry_count - retry_counter) > 0:
-                    time.sleep(self.retry_in)
-                    retry_counter += 1
-                    _send(retry_counter)
-
-                return response
+                    return response
 
         while self.connected:
             response = _send(retry_counter)
@@ -133,12 +135,53 @@ class TwythonStreamer(object):
                 if not self.connected:
                     break
                 if line:
-                    if is_py3:
-                        line = line.decode('utf-8')
-                    data = json.loads(line)
-                    yield data
+                    try:
+                        if is_py3:
+                            line = line.decode('utf-8')
+                        data = json.loads(line)
+                    except ValueError:  # pragma: no cover
+                        self.on_error(response.status_code, 'Unable to decode response, not valid JSON.')
+                    else:
+                        if self.on_success(data):  # pragma: no cover
+                            for message_type in self.handlers:
+                                if message_type in data:
+                                    handler = getattr(self, 'on_' + message_type, None)
+                                    if handler and callable(handler) and not handler(data.get(message_type)):
+                                        break
 
         response.close()
+
+    def on_success(self, data):  # pragma: no cover
+        """Called when data has been successfully received from the stream.
+        Returns True if other handlers for this message should be invoked.
+
+        Feel free to override this to handle your streaming data how you
+        want it handled.
+        See https://dev.twitter.com/docs/streaming-apis/messages for messages
+        sent along in stream responses.
+
+        :param data: data recieved from the stream
+        :type data: dict
+        """
+        return True
+
+    def on_error(self, status_code, data):  # pragma: no cover
+        """Called when stream returns non-200 status code
+
+        Feel free to override this to handle your streaming data how you
+        want it handled.
+
+        :param status_code: Non-200 status code sent from stream
+        :type status_code: int
+
+        :param data: Error message sent from stream
+        :type data: dict
+        """
+        return
+
+    def on_timeout(self):  # pragma: no cover
+        """ Called when the request has timed out """
+        return
 
     def disconnect(self):
         """Used to disconnect the streaming client manually"""
