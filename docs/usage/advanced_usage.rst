@@ -16,23 +16,46 @@ Create a Twython instance with your application keys and the users OAuth tokens
 .. code-block:: python
 
     from twython import Twython
-    twitter = Twython(APP_KEY, APP_SECRET
+    twitter = Twython(APP_KEY, APP_SECRET,
                       OAUTH_TOKEN, OAUTH_TOKEN_SECRET)
 
 Updating Status with Image
 --------------------------
 
-Documentation: https://dev.twitter.com/docs/api/1.1/post/statuses/update_with_media
+This uploads an image as a media object and associates it with a status update.
 
 .. code-block:: python
 
     photo = open('/path/to/file/image.jpg', 'rb')
-    twitter.update_status_with_media(status='Checkout this cool image!', media=photo)
+    response = twitter.upload_media(media=photo)
+    twitter.update_status(status='Checkout this cool image!', media_ids=[response['media_id']])
+    
+Documentation:
+
+* https://dev.twitter.com/rest/reference/post/statuses/update
+* https://dev.twitter.com/rest/reference/post/media/upload
+
+Updating Status with Video
+--------------------------
+
+This uploads a video as a media object and associates it with a status update.
+
+.. code-block:: python
+
+    video = open('/path/to/file/video.mp4', 'rb')
+    response = twitter.upload_video(media=video, media_type='video/mp4')
+    twitter.update_status(status='Checkout this cool video!', media_ids=[response['media_id']])
+
+Documentation:
+
+* https://dev.twitter.com/rest/reference/post/statuses/update
+* https://dev.twitter.com/rest/reference/post/media/upload
 
 Posting a Status with an Editing Image
 --------------------------------------
 
-    This example resizes an image
+This example resizes an image, then uploads it as a media object and associates it
+with a status update.
 
 .. code-block:: python
 
@@ -55,7 +78,9 @@ Posting a Status with an Editing Image
     # unable to be read
     image_io.seek(0)
 
-    twitter.update_status_with_media(media=photo, status='Check out my edited image!')
+
+    response = twitter.upload_media(media=image_io)
+    twitter.update_status(status='Checkout this cool image!', media_ids=[response['media_id']])
 
 
 Search Generator
@@ -67,8 +92,12 @@ That being said, Twython offers a generator for search results and can be access
 
 .. code-block:: python
 
-    search = twitter.search_gen('python')
-    for result in search:
+    from twython import Twython
+    twitter = Twython(APP_KEY, APP_SECRET, OAUTH_TOKEN,
+        OAUTH_TOKEN_SECRET)
+
+    results = twitter.cursor(twitter.search, q='python')
+    for result in results:
         print result
 
 Manipulate the Request (headers, proxies, etc.)
@@ -90,8 +119,8 @@ Here is an example of sending custom headers to a Twitter API request:
         }
     }
 
-    twitter = Twython(APP_KEY, APP_SECRET
-                      OAUTH_TOKEN, OAUTH_TOKEN_SECRET
+    twitter = Twython(APP_KEY, APP_SECRET,
+                      OAUTH_TOKEN, OAUTH_TOKEN_SECRET,
                       client_args=client_args)
 
 Here is an example of sending the request through proxies:
@@ -107,8 +136,8 @@ Here is an example of sending the request through proxies:
         }
     }
 
-    twitter = Twython(APP_KEY, APP_SECRET
-                      OAUTH_TOKEN, OAUTH_TOKEN_SECRET
+    twitter = Twython(APP_KEY, APP_SECRET,
+                      OAUTH_TOKEN, OAUTH_TOKEN_SECRET,
                       client_args=client_args)
 
 or both (and set a timeout variable):
@@ -128,8 +157,8 @@ or both (and set a timeout variable):
         'timeout': 300,
     }
 
-    twitter = Twython(APP_KEY, APP_SECRET
-                      OAUTH_TOKEN, OAUTH_TOKEN_SECRET
+    twitter = Twython(APP_KEY, APP_SECRET,
+                      OAUTH_TOKEN, OAUTH_TOKEN_SECRET,
                       client_args=client_args)
 
 Access Headers of Previous Call
@@ -142,7 +171,7 @@ If you wish to access headers (ex. x-rate-limit-remaining, x-rate-limit-reset, c
 
     from twython import Twython
 
-    twitter = Twython(APP_KEY, APP_SECRET
+    twitter = Twython(APP_KEY, APP_SECRET,
                       OAUTH_TOKEN, OAUTH_TOKEN_SECRET)
 
     twitter.get_home_timeline()

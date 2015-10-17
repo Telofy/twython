@@ -2,14 +2,17 @@ Twython
 =======
 
 
-.. image:: https://badge.fury.io/py/twython.png
-        :target: http://badge.fury.io/py/twython
-.. image:: https://travis-ci.org/ryanmcgrath/twython.png?branch=master
-        :target: https://travis-ci.org/ryanmcgrath/twython
-.. image:: https://pypip.in/d/twython/badge.png
-        :target: https://crate.io/packages/twython/
-.. image:: https://coveralls.io/repos/ryanmcgrath/twython/badge.png?branch=master
-        :target: https://coveralls.io/r/ryanmcgrath/twython?branch=master
+.. image:: https://img.shields.io/pypi/v/twython.svg?style=flat-square
+  :target: https://pypi.python.org/pypi/twython 
+
+.. image:: https://img.shields.io/pypi/dw/twython.svg?style=flat-square
+  :target: https://pypi.python.org/pypi/twython 
+ 
+.. image:: https://img.shields.io/travis/ryanmcgrath/twython.svg?style=flat-square
+  :target: https://travis-ci.org/ryanmcgrath/twython 
+
+.. image:: https://img.shields.io/coveralls/ryanmcgrath/twython/master.svg?style=flat-square
+  :target: https://coveralls.io/r/ryanmcgrath/twython?branch=master 
 
 ``Twython`` is the premier Python library providing an easy (and up-to-date) way to access Twitter data. Actively maintained and featuring support for Python 2.6+ and Python 3. It's been battle tested by companies, educational institutions and individuals alike. Try it today!
 
@@ -115,7 +118,7 @@ Handling the Callback
 
     If your application is a Desktop or Mobile Application *oauth_verifier* will be the PIN code
 
-After they authorize your application to access some of their account details, they'll be redirected to the callback url you specified in ``get_autentication_tokens``
+After they authorize your application to access some of their account details, they'll be redirected to the callback url you specified in ``get_authentication_tokens``
 
 You'll want to extract the ``oauth_verifier`` from the url.
 
@@ -134,10 +137,10 @@ Now that you have the ``oauth_verifier`` stored to a variable, you'll want to cr
 
     final_step = twitter.get_authorized_tokens(oauth_verifier)
 
-Once you have the final user tokens, store them in a database for later use!::
+Once you have the final user tokens, store them in a database for later use::
 
     OAUTH_TOKEN = final_step['oauth_token']
-    OAUTH_TOKEN_SECERT = final_step['oauth_token_secret']
+    OAUTH_TOKEN_SECRET = final_step['oauth_token_secret']
 
 For OAuth 2 (Application Only, read-only) authentication, see `our documentation <https://twython.readthedocs.org/en/latest/usage/starting_out.html#oauth-2-application-authentication>`_
 
